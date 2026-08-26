@@ -8,3 +8,5 @@ uvicorn[standard]>=0.30
 sentence-transformers>=3.0
 pgvector>=0.3.6
 google-genai>=1.0
+redis>=5.0
+slowapi>=0.1.9

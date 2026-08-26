@@ -7,7 +7,7 @@ import json
 import time
 from pathlib import Path
 
-from app.config import EMBEDDING_PROVIDER
+from app.config import EMBEDDING_PROVIDER, HYBRID_BM25_WEIGHT, HYBRID_SEMANTIC_WEIGHT
 from app.db import fetch_all_chunks, get_conn
 from app.search.bm25_search import BM25Index
 from app.search.embeddings import get_embedding_provider
@@ -42,7 +42,7 @@ def main() -> None:
     bm25 = BM25Index(chunks)
 
     provider = get_embedding_provider(EMBEDDING_PROVIDER)
-    semantic = SemanticIndex(provider)
+    semantic = SemanticIndex(provider, provider_name=EMBEDDING_PROVIDER)
 
     queries = load_queries()
     qrels = load_qrels(DATA_DIR / "qrels" / "test.tsv")
@@ -67,7 +67,9 @@ def main() -> None:
             t1 = time.perf_counter()
             semantic_docs = rollup_to_docs(semantic.search_by_vector(vec, k=50, conn=conn))
             t2 = time.perf_counter()
-            hybrid_docs = reciprocal_rank_fusion(bm25_docs, semantic_docs)
+            hybrid_docs = reciprocal_rank_fusion(
+                bm25_docs, semantic_docs, weights=[HYBRID_BM25_WEIGHT, HYBRID_SEMANTIC_WEIGHT]
+            )
             t3 = time.perf_counter()
 
             keyword_run[qid] = [d["doc_id"] for d in bm25_docs]

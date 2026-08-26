@@ -24,4 +24,8 @@ class BM25Index:
             return []
         scores = self._bm25.get_scores(tokenize(query))
         ranked = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:k]
-        return [{**self.chunks[i], "score": float(scores[i])} for i in ranked]
+        # Exclude zero-score "hits" — BM25 returning 0 means no term overlap at
+        # all, not a weak match. Left in, these get treated as real votes by
+        # RRF fusion in hybrid mode, diluting genuinely relevant semantic hits
+        # with arbitrarily rank-ordered noise.
+        return [{**self.chunks[i], "score": float(scores[i])} for i in ranked if scores[i] > 0]

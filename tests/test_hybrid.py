@@ -33,3 +33,11 @@ def test_rrf_preserves_first_seen_item_fields():
 
 def test_rrf_empty_lists():
     assert reciprocal_rank_fusion([], [], k=60) == []
+
+
+def test_rrf_weights_let_one_list_dominate():
+    bm25 = [{"doc_id": "d1"}, {"doc_id": "d2"}]
+    semantic = [{"doc_id": "d2"}, {"doc_id": "d1"}]
+
+    weighted = reciprocal_rank_fusion(bm25, semantic, k=60, weights=[0.1, 1.0])
+    assert weighted[0]["doc_id"] == "d2"  # semantic's rank-1 pick wins clearly
