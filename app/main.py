@@ -89,7 +89,7 @@ def search(
         doc_hits = rollup_to_docs(_bm25_index.search(q, k=fetch_k))[:k]
     elif mode == "semantic":
         doc_hits = rollup_to_docs(_semantic_index.search(q, k=fetch_k))[:k]
-    else:  # hybrid
+    else:
         bm25_docs = rollup_to_docs(_bm25_index.search(q, k=fetch_k))
         semantic_docs = rollup_to_docs(_semantic_index.search(q, k=fetch_k))
         doc_hits = reciprocal_rank_fusion(

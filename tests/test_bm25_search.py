@@ -9,7 +9,6 @@ CHUNKS = [
 
 def test_search_excludes_zero_overlap_results():
     index = BM25Index(CHUNKS)
-    # shares no terms with any chunk -> BM25 score is exactly 0 for all
     results = index.search("zebra elephant giraffe", k=10)
     assert results == []
 

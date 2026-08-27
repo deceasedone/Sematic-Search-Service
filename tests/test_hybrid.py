@@ -40,4 +40,4 @@ def test_rrf_weights_let_one_list_dominate():
     semantic = [{"doc_id": "d2"}, {"doc_id": "d1"}]
 
     weighted = reciprocal_rank_fusion(bm25, semantic, k=60, weights=[0.1, 1.0])
-    assert weighted[0]["doc_id"] == "d2"  # semantic's rank-1 pick wins clearly
+    assert weighted[0]["doc_id"] == "d2"

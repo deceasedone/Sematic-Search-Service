@@ -1,11 +1,18 @@
-"""Postgres connection + schema management (psycopg3, no ORM)."""
+"""Postgres connection + schema management (psycopg3, no ORM — the guide's
+own bias is toward simple, inspectable code over framework machinery).
+
+Uses a connection pool rather than opening a fresh connection per call:
+under concurrent load, a new connection means a new TCP handshake, auth
+round trip, and register_vector's type lookup every single time — real,
+measured overhead once request volume goes up (see loadtest results).
+"""
 from contextlib import contextmanager
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
-import psycopg
 from pgvector.psycopg import register_vector
+from psycopg_pool import ConnectionPool
 
-from app.config import DATABASE_URL, EMBEDDING_DIM
+from app.config import DATABASE_URL, DB_POOL_MAX_SIZE, DB_POOL_MIN_SIZE, EMBEDDING_DIM
 
 SCHEMA = f"""
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -24,15 +31,25 @@ CREATE INDEX IF NOT EXISTS idx_chunks_embedding ON chunks
     USING hnsw (embedding vector_cosine_ops);
 """
 
+_pool: Optional[ConnectionPool] = None
+
+
+def get_pool() -> ConnectionPool:
+    global _pool
+    if _pool is None:
+        _pool = ConnectionPool(
+            DATABASE_URL,
+            min_size=DB_POOL_MIN_SIZE,
+            max_size=DB_POOL_MAX_SIZE,
+            configure=register_vector,  # runs once per physical connection, not per checkout
+        )
+    return _pool
+
 
 @contextmanager
 def get_conn():
-    conn = psycopg.connect(DATABASE_URL)
-    register_vector(conn)
-    try:
+    with get_pool().connection() as conn:
         yield conn
-    finally:
-        conn.close()
 
 
 def init_schema() -> None:

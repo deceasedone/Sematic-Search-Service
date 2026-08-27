@@ -24,6 +24,6 @@ def test_cache_degrades_gracefully_when_redis_unreachable():
     """
     with patch("app.cache.get_client", side_effect=redis.RedisError("down")):
         assert get_cached_search("semantic", "q", 10) is None
-        set_cached_search("semantic", "q", 10, {"ok": True})  # must not raise
+        set_cached_search("semantic", "q", 10, {"ok": True})
         assert get_cached_embedding("local", "q") is None
-        set_cached_embedding("local", "q", [0.1, 0.2])  # must not raise
+        set_cached_embedding("local", "q", [0.1, 0.2])

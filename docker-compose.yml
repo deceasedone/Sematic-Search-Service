@@ -37,6 +37,8 @@ services:
       REDIS_URL: redis://redis:6379/0
       EMBEDDING_PROVIDER: local
       EMBEDDING_DIM: "384"
+      APP_WORKERS: "4"
+      RATE_LIMIT: ${RATE_LIMIT:-30/minute}
     ports:
       - "8000:8000"
     volumes:

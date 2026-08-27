@@ -46,7 +46,7 @@ def set_cached_search(mode: str, query: str, k: int, response: Dict[str, Any]) -
     try:
         get_client().setex(f"search:{mode}:{k}:{_hash(query)}", SEARCH_CACHE_TTL, json.dumps(response))
     except redis.RedisError:
-        pass  # cache is a speed optimization, never a hard dependency
+        pass
 
 
 def get_cached_embedding(provider_name: str, text: str) -> Optional[List[float]]:

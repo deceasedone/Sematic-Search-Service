@@ -23,7 +23,13 @@ class LocalEmbeddingProvider(EmbeddingProvider):
     """sentence-transformers, run on-machine — free, offline, default choice."""
 
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
-        from sentence_transformers import SentenceTransformer
+        import os
+
+        import torch
+        from sentence_transformers import SentenceTransformer  # deferred: heavy import
+
+        # Cap PyTorch threads to prevent CPU oversubscription with multiple workers.
+        torch.set_num_threads(int(os.getenv("TORCH_NUM_THREADS", "1")))
 
         self._model = SentenceTransformer(model_name)
         self._dim = self._model.get_embedding_dimension()
