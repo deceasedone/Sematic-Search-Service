@@ -12,3 +12,4 @@ redis>=5.0
 slowapi>=0.1.9
 locust>=2.20
 psycopg-pool>=3.2
+hnswlib>=0.8

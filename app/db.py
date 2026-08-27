@@ -101,6 +101,20 @@ def update_embeddings(pairs: Iterable[Tuple[str, List[float]]]) -> None:
         )
         conn.commit()
 
+def fetch_chunks_with_embeddings(limit: Optional[int] = None) -> List[Dict]:
+    """Returns id, doc_id, embedding for chunks that have one — used by the
+    Phase 6 HNSW benchmark, not by normal search (that goes through pgvector
+    directly via SemanticIndex)."""
+    with get_conn() as conn, conn.cursor() as cur:
+        if limit:
+            cur.execute(
+                "SELECT id, doc_id, embedding FROM chunks WHERE embedding IS NOT NULL LIMIT %s",
+                (limit,),
+            )
+        else:
+            cur.execute("SELECT id, doc_id, embedding FROM chunks WHERE embedding IS NOT NULL")
+        cols = [d.name for d in cur.description]
+        return [dict(zip(cols, row)) for row in cur.fetchall()]
 
 def count_chunks() -> int:
     with get_conn() as conn, conn.cursor() as cur:
